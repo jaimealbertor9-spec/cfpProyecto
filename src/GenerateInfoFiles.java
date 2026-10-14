@@ -4,10 +4,10 @@ import java.util.Locale;
 import java.util.Random;
 
 /**
- * Clase responsable de la generacion sintetica y pseudoaleatoria de archivos
- * de prueba para el sistema de ventas.
+ * Clase encargada de la generacion pseudoaleatoria de archivos planos de prueba
+ * para el sistema de ventas comerciales.
  * 
- * Satisface los requerimientos de la primera clase con metodo main para la
+ * Cumple con los requisitos de la primera clase con metodo main para la
  * Entrega Final del modulo Conceptos Fundamentales de Programacion.
  * 
  * @author Jaime Alberto Rodriguez Jaramillo
@@ -31,7 +31,7 @@ public class GenerateInfoFiles {
 
     /**
      * Metodo principal de ejecucion. Genera los catalogos maestros y las ventas
-     * sin requerir interaccion con el usuario.
+     * sin solicitar informacion por teclado al usuario.
      * 
      * @param args Argumentos de linea de comandos (no utilizados).
      */
@@ -57,16 +57,14 @@ public class GenerateInfoFiles {
      * Formato por linea: ID Producto; Nombre Producto; Precio Por Unidad Producto
      * 
      * @param productsCount Cantidad total de productos a generar en productos.csv.
-     * @throws Exception Si ocurre un error de escritura en disco.
+     * @throws Exception Si ocurre un fallo en la escritura en disco.
      */
     public static void createProductsFile(int productsCount) throws Exception {
         Random rand = new Random();
         try (PrintWriter writer = new PrintWriter("productos.csv", StandardCharsets.UTF_8.name())) {
             for (int i = 1; i <= productsCount; i++) {
-                // Generacion modular para admitir cualquier cantidad sin desbordamiento de indice
                 String base = PRODUCTOS_BASE[(i - 1) % PRODUCTOS_BASE.length];
                 String nombre = base + " Mod_" + i;
-                // Rango de precios coherentes entre 15,000.00 y 1,500,000.00
                 double precio = 15000.0 + (rand.nextDouble() * 1485000.0);
                 
                 writer.printf(Locale.US, "%d;%s;%.2f\n", i, nombre, precio);
@@ -93,7 +91,6 @@ public class GenerateInfoFiles {
 
                 writer.printf("%s;%d;%s;%s\n", tipoDoc, numDoc, nombre, apellido);
 
-                // Genera entre 3 y 12 ventas para el archivo particular de este vendedor
                 int randomSalesCount = 3 + rand.nextInt(10);
                 createSalesMenFile(randomSalesCount, nombre + " " + apellido, numDoc);
             }
@@ -103,22 +100,20 @@ public class GenerateInfoFiles {
     /**
      * Crea un archivo plano individual de ventas para un vendedor en particular.
      * Formato linea 1: Tipo Documento Vendedor; Numero Documento Vendedor
-     * Formato transacciones subsiguientes: ID Producto; Cantidad Producto Vendido;
+     * Formato lineas de venta: ID Producto; Cantidad Producto Vendido;
      * 
-     * @param randomSalesCount Cantidad de ventas aleatorias a registrar.
+     * @param randomSalesCount Cantidad de transacciones aleatorias a registrar.
      * @param name             Nombre descriptivo del vendedor.
      * @param id               Numero de documento unico del vendedor.
-     * @throws Exception       Si ocurre un fallo en la escritura en disco.
+     * @throws Exception       Si ocurre un fallo en la escritura del archivo.
      */
     public static void createSalesMenFile(int randomSalesCount, String name, long id) throws Exception {
         Random rand = new Random();
         String filename = "vendedor_" + id + ".csv";
         try (PrintWriter writer = new PrintWriter(filename, StandardCharsets.UTF_8.name())) {
-            // Cabecera obligatoria de identificación
             writer.printf("CC;%d\n", id);
 
             for (int i = 0; i < randomSalesCount; i++) {
-                // Selecciona IDs de productos dentro del rango generado (1 al 10)
                 int idProducto = 1 + rand.nextInt(10);
                 int cantidad = 1 + rand.nextInt(7);
                 writer.printf("%d;%d;\n", idProducto, cantidad);

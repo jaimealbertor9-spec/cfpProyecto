@@ -5,15 +5,19 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Motor analitico de procesamiento por lotes y reporteria transaccional.
- * Realiza la ingesta de catalogos maestros, consolida las ventas individuales
- * y exporta los reportes finales ordenados descendentemente.
+ * Motor analitico de procesamiento por lotes y consolidacion de reporteria comercial.
+ * Lee los catalogos maestros, procesa los archivos de transacciones por vendedor
+ * y genera los reportes analiticos ordenados descendentemente.
  * 
- * Satisface los requerimientos de la segunda clase con metodo main para la
+ * Satisface los requisitos de la segunda clase con metodo main para la
  * Entrega Final del modulo Conceptos Fundamentales de Programacion.
  * 
  * @author Jaime Alberto Rodriguez Jaramillo
@@ -22,7 +26,8 @@ import java.util.stream.Collectors;
 public class Main {
 
     /**
-     * Modela un producto del catalogo comercial y acumula las unidades vendidas.
+     * Clase de dominio que encapsula las propiedades de un Producto
+     * y totaliza las unidades vendidas en memoria.
      */
     public static class Producto {
         private final String id;
@@ -37,10 +42,21 @@ public class Main {
             this.cantidadVendida = 0;
         }
 
-        public String getId() { return id; }
-        public String getNombre() { return nombre; }
-        public double getPrecio() { return precio; }
-        public int getCantidadVendida() { return cantidadVendida; }
+        public String getId() {
+            return id;
+        }
+
+        public String getNombre() {
+            return nombre;
+        }
+
+        public double getPrecio() {
+            return precio;
+        }
+
+        public int getCantidadVendida() {
+            return cantidadVendida;
+        }
 
         public void sumarCantidad(int cantidad) {
             this.cantidadVendida += cantidad;
@@ -48,7 +64,8 @@ public class Main {
     }
 
     /**
-     * Modela a un vendedor y totaliza el monto monetario recaudado por sus ventas.
+     * Clase de dominio que representa a un Vendedor y totaliza el monto
+     * monetario recaudado por concepto de sus ventas.
      */
     public static class Vendedor {
         private final String tipoDoc;
@@ -65,11 +82,25 @@ public class Main {
             this.ventasTotales = 0.0;
         }
 
-        public String getTipoDoc() { return tipoDoc; }
-        public String getNumDoc() { return numDoc; }
-        public String getNombres() { return nombres; }
-        public String getApellidos() { return apellidos; }
-        public double getVentasTotales() { return ventasTotales; }
+        public String getTipoDoc() {
+            return tipoDoc;
+        }
+
+        public String getNumDoc() {
+            return numDoc;
+        }
+
+        public String getNombres() {
+            return nombres;
+        }
+
+        public String getApellidos() {
+            return apellidos;
+        }
+
+        public double getVentasTotales() {
+            return ventasTotales;
+        }
 
         public void sumarVenta(double monto) {
             this.ventasTotales += monto;
@@ -77,7 +108,8 @@ public class Main {
     }
 
     /**
-     * Punto de entrada del motor analitico.
+     * Metodo principal de ejecucion del motor analitico.
+     * Procesa los datos y genera los archivos de salida sin solicitar datos al usuario.
      * 
      * @param args Argumentos de linea de comandos (no utilizados).
      */
@@ -85,14 +117,14 @@ public class Main {
         try {
             System.out.println("Iniciando procesamiento analitico de ventas...");
 
-            // 1. Carga de catalogos maestros indexados en memoria O(1)
+            // 1. Carga de catalogos maestros en memoria mediante tablas Hash O(1)
             Map<String, Producto> mapaProductos = cargarProductos("productos.csv");
             Map<String, Vendedor> mapaVendedores = cargarVendedores("vendedores.csv");
 
-            // 2. Localizacion y procesamiento de archivos de ventas individuales
+            // 2. Busqueda y procesamiento de los archivos individuales de venta
             procesarArchivosDeVentas(mapaVendedores, mapaProductos);
 
-            // 3. Generacion de los reportes CSV solicitados
+            // 3. Generacion de los reportes CSV consolidados
             generarReportes(mapaVendedores, mapaProductos);
 
             System.out.println("Procesamiento finalizado con exito. Reportes generados correctamente!");
@@ -103,7 +135,7 @@ public class Main {
     }
 
     /**
-     * Carga el catalogo maestro de productos desde el archivo CSV.
+     * Carga el archivo maestro de productos hacia un Map indexado por ID.
      */
     private static Map<String, Producto> cargarProductos(String ruta) throws IOException {
         Map<String, Producto> mapa = new HashMap<>();
@@ -129,7 +161,7 @@ public class Main {
     }
 
     /**
-     * Carga el archivo maestro de vendedores desde el archivo CSV.
+     * Carga el archivo maestro de vendedores hacia un Map indexado por Numero de Documento.
      */
     private static Map<String, Vendedor> cargarVendedores(String ruta) throws IOException {
         Map<String, Vendedor> mapa = new HashMap<>();
@@ -156,8 +188,7 @@ public class Main {
     }
 
     /**
-     * Localiza todos los archivos individuales de venta cuyo nombre coincida con
-     * el patron 'vendedor_*.csv' en el directorio de trabajo.
+     * Explora el directorio de trabajo local identificando los archivos con patron 'vendedor_*.csv'.
      */
     private static void procesarArchivosDeVentas(Map<String, Vendedor> mapaVendedores, Map<String, Producto> mapaProductos) throws IOException {
         List<Path> archivos = Files.walk(Paths.get("."))
@@ -171,8 +202,7 @@ public class Main {
     }
 
     /**
-     * Procesa las transacciones de un archivo de vendedor particular.
-     * Incorpora el Punto Extra (c): control y descarte seguro de datos anomalos.
+     * Procesa un archivo particular de ventas aplicando validaciones defensivas (Punto Extra c).
      */
     private static void procesarArchivoVentaIndividual(Path archivo, Map<String, Vendedor> mapaVendedores, Map<String, Producto> mapaProductos) {
         try (BufferedReader reader = Files.newBufferedReader(archivo, StandardCharsets.UTF_8)) {
@@ -194,26 +224,26 @@ public class Main {
             while ((linea = reader.readLine()) != null) {
                 if (linea.trim().isEmpty()) continue;
                 String[] campos = linea.split(";");
-                if (campos.length < 2) continue; // Omite lineas truncadas
+                if (campos.length < 2) continue;
 
                 try {
                     String idProducto = campos[0].trim();
                     int cantidad = Integer.parseInt(campos[1].trim());
 
-                    // Validacion Punto Extra (c): Cantidades incoherentes o negativas
+                    // Validacion: Cantidades menores o iguales a cero
                     if (cantidad <= 0) {
                         System.err.println("Advertencia [" + archivo.getFileName() + "]: Cantidad invalida omitida (" + cantidad + ")");
                         continue;
                     }
 
-                    // Validacion Punto Extra (c): Integridad referencial de productos
+                    // Validacion: Integridad referencial de productos
                     Producto producto = mapaProductos.get(idProducto);
                     if (producto == null) {
-                        System.err.println("Advertencia [" + archivo.getFileName() + "]: Producto con ID " + idProducto + " no existe. Registro omitido.");
+                        System.err.println("Advertencia [" + archivo.getFileName() + "]: Producto con ID " + idProducto + " no existe. Omitido.");
                         continue;
                     }
 
-                    // Calculo y acumulacion segura en memoria
+                    // Acumulacion de metricas en memoria
                     double subtotal = producto.getPrecio() * cantidad;
                     vendedor.sumarVenta(subtotal);
                     producto.sumarCantidad(cantidad);
@@ -228,10 +258,10 @@ public class Main {
     }
 
     /**
-     * Genera los dos reportes finales ordenados descendentemente (Requisitos 3 y 4).
+     * Genera los dos reportes finales consolidados en formato CSV ordenados descendentemente.
      */
     private static void generarReportes(Map<String, Vendedor> mapaVendedores, Map<String, Producto> mapaProductos) throws IOException {
-        // 1. reporte_vendedores.csv ordenado de mayor a menor recaudacion
+        // 1. Reporte de vendedores ordenado por total recaudado de mayor a menor
         List<Vendedor> vendedoresOrdenados = mapaVendedores.values().stream()
                 .sorted(Comparator.comparingDouble(Vendedor::getVentasTotales).reversed())
                 .collect(Collectors.toList());
@@ -242,7 +272,7 @@ public class Main {
             }
         }
 
-        // 2. reporte_productos.csv ordenado por cantidad vendida de mayor a menor
+        // 2. Reporte de productos ordenado por cantidad vendida de mayor a menor
         List<Producto> productosOrdenados = mapaProductos.values().stream()
                 .sorted(Comparator.comparingInt(Producto::getCantidadVendida).reversed())
                 .collect(Collectors.toList());

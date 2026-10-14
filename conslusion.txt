@@ -1,0 +1,56 @@
+================================================================================
+PROYECTO: GENERACIÓN Y CLASIFICACIÓN DE DATOS TRANSACCIONALES EN JAVA
+MÓDULO: CONCEPTOS FUNDAMENTALES DE PROGRAMACIÓN
+SUBGRUPO: 20
+INTEGRANTE: Jaime Alberto Rodriguez Jaramillo
+================================================================================
+
+1. LO APRENDIDO DURANTE EL DESARROLLO DEL PROYECTO
+--------------------------------------------------------------------------------
+- Manejo y persistencia de archivos planos (I/O): Uso de flujos de lectura y 
+  escritura en Java mediante PrintWriter, BufferedReader y la API moderna 
+  java.nio.file (Files.lines, Files.walk), garantizando la correcta codificación 
+  UTF-8 y el cierre seguro de recursos mediante la sentencia try-with-resources.
+- Estructuras de datos de alto rendimiento: Implementación de tablas hash 
+  (Map<String, Vendedor> y Map<String, Producto>) para indexar entidades en 
+  memoria, logrando búsquedas transaccionales en tiempo constante O(1).
+- Programación funcional y declarativa: Procesamiento analítico mediante el 
+  API Stream de Java, aplicando operaciones intermedias (filter, map, sorted) 
+  con comparadores invertidos (Comparator.reversed()) y recolección a listas.
+- Arquitectura desacoplada y principios POO: Separación clara de 
+  responsabilidades entre la generación sintética de datos (GenerateInfoFiles) 
+  y el motor de consolidación y reportería analítica (Main).
+- Control de versiones y trazabilidad: Gestión de código fuente y artefactos 
+  mediante Git y repositorios remotos en GitHub.
+
+2. POSIBLES APLICACIONES EN LA VIDA PROFESIONAL DE LAS DESTREZAS ADQUIRIDAS
+--------------------------------------------------------------------------------
+- Automatización de procesos ETL (Extract, Transform, Load): Ingesta y 
+  transformación por lotes (batch processing) de reportes comerciales, extractos 
+  bancarios o logs de sistemas distribuidos hacia almacenes de datos.
+- Integración de sistemas heterogéneos: Normalización y saneamiento de 
+  información procedente de puntos de venta (POS) o plataformas de facturación 
+  descentralizadas que exportan registros en formatos delimitados (CSV/TSV).
+- Construcción de motores de reportería analítica: Generación automatizada 
+  de cuadros de mando, resúmenes de rendimiento comercial e inventarios sin 
+  dependencia de herramientas externas.
+- Programación defensiva y tolerancia a fallos: Validación de integridad 
+  referencial y control de consistencia de datos en entornos empresariales.
+
+3. DIFICULTADES PRESENTADAS DURANTE EL DESARROLLO DEL PROYECTO
+--------------------------------------------------------------------------------
+- Gestión de recursos y bloqueos de I/O: Asegurar que los flujos de lectura y 
+  escritura se cerraran debidamente para evitar bloqueos de archivos en disco 
+  o fugas de memoria, resuelto adoptando try-with-resources.
+- Exploración dinámica del sistema de archivos: Identificación confiable de 
+  archivos transaccionales con comodines (vendedor_*.csv) evitando colisiones 
+  con los archivos maestros (productos.csv, vendedores.csv) o archivos de 
+  reportería generados.
+- Manejo de inconsistencias y excepciones en tiempo de ejecución: Controlar 
+  posibles desbordamientos en arreglos estáticos de nombres/precios y evitar 
+  punteros nulos (NullPointerException) ante ventas que referenciaban IDs de 
+  productos inexistentes o cantidades corruptas/negativas.
+- Cumplimiento de compatibilidad estricta: Garantizar que las características 
+  avanzadas de colecciones y lambdas operaran de forma nativa bajo el estándar 
+  de Java 8 sin librerías externas.
+================================================================================
